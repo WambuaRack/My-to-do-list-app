@@ -1,3 +1,6 @@
+// Import Firebase initialization
+import { app, analytics } from './firebase.js';
+
 const inputBox = document.getElementById("input-box");
 const reminderTime = document.getElementById("reminder-time");
 const listContainer = document.getElementById("list-container");
@@ -26,7 +29,7 @@ function addTask() {
     const editTime = li.querySelector('.edit-time');
 
     deleteBtn.addEventListener('click', () => li.remove());
-    
+
     editBtn.addEventListener('click', () => {
         if (editBtn.textContent === 'Edit') {
             taskSpan.style.display = 'none';
@@ -58,7 +61,7 @@ function addTask() {
         const currentTime = new Date();
         if (reminderDate > currentTime) {
             const timeDifference = reminderDate - currentTime;
-            setTimeout(function () {
+            setTimeout(function() {
                 alert(`Reminder: ${taskText}`);
             }, timeDifference);
         } else {
