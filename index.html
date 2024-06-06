@@ -3,21 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My to do app</title>
-    <script type="module" src="./index.js" defer></script>
+    <title>My To Do List</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div id="auth-container">
-        <button id="login-button">Login</button>
-        <button id="register-button">Register</button>
-        <button id="logout-button" style="display: none;">Logout</button>
+    <div class="container">
+        <div class="todo-app">
+            <h2>TO-DO LIST <img src="er.jpg" alt="To-Do List Image"></h2>
+            <div class="row">
+                <input type="text" id="input-box" placeholder="Add Your Task">
+                <input type="datetime-local" id="reminder-time">
+                <button onclick="addTask()">Add</button>
+            </div>
+            <ul id="list-container"></ul>
+        </div>
     </div>
-    <div id="task-container" style="display: none;">
-        <input type="text" id="input-box" placeholder="Enter task">
-        <input type="time" id="reminder-time">
-        <button id="add-task-button">Add Task</button>
-        <div id="list-container"></div>
-    </div>
+    <script src="script.js"></script>
 </body>
 </html>
