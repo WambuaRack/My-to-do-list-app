@@ -1,138 +1,91 @@
-import { app, analytics } from './firebase.js';
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "firebase/auth";
-
-const auth = getAuth(app);
 const inputBox = document.getElementById("input-box");
 const reminderTime = document.getElementById("reminder-time");
 const listContainer = document.getElementById("list-container");
 
-const authContainer = document.getElementById("auth-container");
-const taskContainer = document.getElementById("task-container");
-const loginButton = document.getElementById("login-button");
-const registerButton = document.getElementById("register-button");
-const logoutButton = document.getElementById("logout-button");
-const addTaskButton = document.getElementById("add-task-button");
-
-let currentUser = null;
-
-// Function to add a task
 function addTask() {
-    if (!currentUser) {
-        alert("Please log in to add tasks.");
+    if (inputBox.value.trim() === '') {
+        alert("You must write something!");
         return;
     }
 
-    const task = inputBox.value.trim();
-    const time = reminderTime.value;
+    const taskText = inputBox.value;
+    const reminder = reminderTime.value;
 
-    if (task && time) {
-        const taskItem = document.createElement("div");
-        taskItem.textContent = `${task} - Reminder at: ${time}`;
-        listContainer.appendChild(taskItem);
-        inputBox.value = "";
-        reminderTime.value = "";
-    } else {
-        alert("Please enter a task and set a reminder time.");
+    let li = document.createElement("li");
+    li.innerHTML = `
+        <span>${taskText}</span>
+        <input type="datetime-local" class="edit-time" value="${reminder}" style="display: none;">
+        <button class="edit-btn">Edit</button>
+        <button class="delete-btn">&times;</button>
+    `;
+    listContainer.appendChild(li);
+
+    const deleteBtn = li.querySelector('.delete-btn');
+    const editBtn = li.querySelector('.edit-btn');
+    const taskSpan = li.querySelector('span');
+    const editTime = li.querySelector('.edit-time');
+
+    deleteBtn.addEventListener('click', () => li.remove());
+    
+    editBtn.addEventListener('click', () => {
+        if (editBtn.textContent === 'Edit') {
+            taskSpan.style.display = 'none';
+            editTime.style.display = 'inline';
+            inputBox.value = taskSpan.textContent;
+            editBtn.textContent = 'Save';
+        } else {
+            taskSpan.textContent = inputBox.value;
+            taskSpan.style.display = 'inline';
+            editTime.style.display = 'none';
+            editBtn.textContent = 'Edit';
+            const newReminder = editTime.value;
+            if (newReminder) {
+                const reminderDate = new Date(newReminder);
+                const currentTime = new Date();
+                if (reminderDate > currentTime) {
+                    const timeDifference = reminderDate - currentTime;
+                    setTimeout(() => alert(`Reminder: ${taskSpan.textContent}`), timeDifference);
+                } else {
+                    alert("Please set a future time for the reminder.");
+                }
+            }
+        }
+    });
+
+    // Set reminder if a valid time is provided
+    if (reminder) {
+        const reminderDate = new Date(reminder);
+        const currentTime = new Date();
+        if (reminderDate > currentTime) {
+            const timeDifference = reminderDate - currentTime;
+            setTimeout(function () {
+                alert(`Reminder: ${taskText}`);
+            }, timeDifference);
+        } else {
+            alert("Please set a future time for the reminder.");
+        }
     }
+
+    inputBox.value = "";
+    reminderTime.value = "";
 }
 
-// Function to check reminders
+// Optional: Check reminders periodically (in case the user refreshes the page or adds tasks with delayed reminders)
 function checkReminders() {
-    // Your existing checkReminders() function code here...
+    const tasks = Array.from(listContainer.children);
+    const currentTime = new Date();
+
+    tasks.forEach(task => {
+        const reminder = task.getAttribute('data-reminder');
+        if (reminder) {
+            const reminderDate = new Date(reminder);
+            if (reminderDate <= currentTime && !task.classList.contains('notified')) {
+                alert(`Reminder: ${task.textContent}`);
+                task.classList.add('notified');
+            }
+        }
+    });
 }
 
 // Check reminders every minute
 setInterval(checkReminders, 60000);
-
-// Function to handle user login
-function handleLogin() {
-    const email = prompt("Enter your email:");
-    const password = prompt("Enter your password:");
-
-    if (!email || !password) {
-        alert("Invalid email or password.");
-        return;
-    }
-
-    signInWithEmailAndPassword(auth, email, password)
-        .then((userCredential) => {
-            currentUser = userCredential.user;
-            console.log("User logged in:", currentUser.email);
-            alert("Logged in successfully!");
-            updateUI();
-        })
-        .catch((error) => {
-            console.error("Error:", error.code, error.message);
-            alert("Login failed. Please try again.");
-        });
-}
-
-// Function to handle user registration
-function handleRegister() {
-    const email = prompt("Enter your email:");
-    const password = prompt("Enter your password:");
-
-    if (!email || !password) {
-        alert("Invalid email or password.");
-        return;
-    }
-
-    createUserWithEmailAndPassword(auth, email, password)
-        .then((userCredential) => {
-            currentUser = userCredential.user;
-            console.log("User registered and logged in:", currentUser.email);
-            alert("Registered and logged in successfully!");
-            updateUI();
-        })
-        .catch((error) => {
-            console.error("Error:", error.code, error.message);
-            alert("Registration failed. Please try again.");
-        });
-}
-
-// Function to handle user logout
-function handleLogout() {
-    signOut(auth)
-        .then(() => {
-            currentUser = null;
-            console.log("User logged out");
-            alert("Logged out successfully!");
-            updateUI();
-        })
-        .catch((error) => {
-            console.error("Error:", error.code, error.message);
-            alert("Logout failed. Please try again.");
-        });
-}
-
-// Listen for authentication state changes
-onAuthStateChanged(auth, (user) => {
-    currentUser = user;
-    if (user) {
-        console.log("User is logged in:", user.email);
-    } else {
-        console.log("No user is logged in.");
-    }
-    updateUI();
-});
-
-// Update UI based on authentication state
-function updateUI() {
-    if (currentUser) {
-        authContainer.style.display = "none";
-        taskContainer.style.display = "block";
-        logoutButton.style.display = "block";
-    } else {
-        authContainer.style.display = "block";
-        taskContainer.style.display = "none";
-        logoutButton.style.display = "none";
-    }
-}
-
-// Attach event listeners
-loginButton.addEventListener("click", handleLogin);
-registerButton.addEventListener("click", handleRegister);
-logoutButton.addEventListener("click", handleLogout);
-addTaskButton.addEventListener("click", addTask);
-
-updateUI();
