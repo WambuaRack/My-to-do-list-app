@@ -11,6 +11,7 @@ const taskContainer = document.getElementById("task-container");
 const loginButton = document.getElementById("login-button");
 const registerButton = document.getElementById("register-button");
 const logoutButton = document.getElementById("logout-button");
+const addTaskButton = document.getElementById("add-task-button");
 
 let currentUser = null;
 
@@ -132,5 +133,6 @@ function updateUI() {
 loginButton.addEventListener("click", handleLogin);
 registerButton.addEventListener("click", handleRegister);
 logoutButton.addEventListener("click", handleLogout);
+addTaskButton.addEventListener("click", addTask);
 
 updateUI();
