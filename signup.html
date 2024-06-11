@@ -9,7 +9,7 @@
 <body>
     <div class="container">
         <h2>Sign Up</h2>
-        <form>
+        <form id="signupForm">
             <div class="form-group">
                 <label for="username">Username</label>
                 <input type="text" id="username" name="username" required>
@@ -23,8 +23,12 @@
                 <input type="password" id="password" name="password" required>
             </div>
             <button type="submit">Sign Up</button><br><br>
-            <h1>Have an Account?</h1><a href="login.html"></a>
+            <h1>Have an Account?</h1><a href="login.html">Login</a>
         </form>
     </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.0.2/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.2/firebase-auth.js"></script>
+    <script src="signup.js"></script>
 </body>
 </html>
