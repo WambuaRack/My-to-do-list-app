@@ -1,6 +1,33 @@
-const inputBox = document.getElementById("input-box");
-const reminderTime = document.getElementById("reminder-time");
-const listContainer = document.getElementById("list-container");
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyA4bP5LKBl6AI4tTRBXaEHZ84uPk_xbX7Y",
+  authDomain: "my-to-do-list-f5bdb.firebaseapp.com",
+  projectId: "my-to-do-list-f5bdb",
+  storageBucket: "my-to-do-list-f5bdb.appspot.com",
+  messagingSenderId: "299508950200",
+  appId: "1:299508950200:web:c8f9ae086350d84f54804d",
+  measurementId: "G-J3GE039YBG"
+};
+
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+
+// Get a reference to the Firestore service
+const db = firebase.firestore();
+
+function addTaskToFirestore(taskText, reminder) {
+    // Add task to Firestore
+    db.collection("tasks").add({
+        task: taskText,
+        reminderTime: reminder
+    })
+    .then((docRef) => {
+        console.log("Task added with ID: ", docRef.id);
+    })
+    .catch((error) => {
+        console.error("Error adding task: ", error);
+    });
+}
 
 function addTask() {
     if (inputBox.value.trim() === '') {
@@ -25,67 +52,59 @@ function addTask() {
     const taskSpan = li.querySelector('span');
     const editTime = li.querySelector('.edit-time');
 
-    deleteBtn.addEventListener('click', () => li.remove());
-    
-    editBtn.addEventListener('click', () => {
-        if (editBtn.textContent === 'Edit') {
-            taskSpan.style.display = 'none';
-            editTime.style.display = 'inline';
-            inputBox.value = taskSpan.textContent;
-            editBtn.textContent = 'Save';
-        } else {
-            taskSpan.textContent = inputBox.value;
-            taskSpan.style.display = 'inline';
-            editTime.style.display = 'none';
-            editBtn.textContent = 'Edit';
-            const newReminder = editTime.value;
-            if (newReminder) {
-                const reminderDate = new Date(newReminder);
-                const currentTime = new Date();
-                if (reminderDate > currentTime) {
-                    const timeDifference = reminderDate - currentTime;
-                    setTimeout(() => alert(`Reminder: ${taskSpan.textContent}`), timeDifference);
-                } else {
-                    alert("Please set a future time for the reminder.");
-                }
-            }
+    deleteBtn.addEventListener('click', () => {
+        // Remove task from Firestore when deleted from UI
+        const taskId = li.getAttribute('data-id');
+        if (taskId) {
+            db.collection("tasks").doc(taskId).delete()
+                .then(() => {
+                    console.log("Task successfully deleted from Firestore!");
+                })
+                .catch((error) => {
+                    console.error("Error removing task: ", error);
+                });
         }
+        li.remove();
     });
 
-    // Set reminder if a valid time is provided
-    if (reminder) {
-        const reminderDate = new Date(reminder);
-        const currentTime = new Date();
-        if (reminderDate > currentTime) {
-            const timeDifference = reminderDate - currentTime;
-            setTimeout(function () {
-                alert(`Reminder: ${taskText}`);
-            }, timeDifference);
-        } else {
-            alert("Please set a future time for the reminder.");
-        }
-    }
+    editBtn.addEventListener('click', () => {
+        // Code for editing task
+        // ...
+    });
+
+    // Add task to Firestore
+    addTaskToFirestore(taskText, reminder);
 
     inputBox.value = "";
     reminderTime.value = "";
 }
 
-// Optional: Check reminders periodically (in case the user refreshes the page or adds tasks with delayed reminders)
-function checkReminders() {
-    const tasks = Array.from(listContainer.children);
-    const currentTime = new Date();
+// Function to retrieve tasks from Firestore
+function getTasksFromFirestore() {
+    db.collection("tasks").get()
+        .then((querySnapshot) => {
+            querySnapshot.forEach((doc) => {
+                const taskData = doc.data();
+                const taskId = doc.id;
+                const taskText = taskData.task;
+                const reminder = taskData.reminderTime;
 
-    tasks.forEach(task => {
-        const reminder = task.getAttribute('data-reminder');
-        if (reminder) {
-            const reminderDate = new Date(reminder);
-            if (reminderDate <= currentTime && !task.classList.contains('notified')) {
-                alert(`Reminder: ${task.textContent}`);
-                task.classList.add('notified');
-            }
-        }
-    });
+                // Create UI elements for each task
+                let li = document.createElement("li");
+                li.innerHTML = `
+                    <span>${taskText}</span>
+                    <input type="datetime-local" class="edit-time" value="${reminder}" style="display: none;">
+                    <button class="edit-btn">Edit</button>
+                    <button class="delete-btn">&times;</button>
+                `;
+                li.setAttribute('data-id', taskId);
+                listContainer.appendChild(li);
+            });
+        })
+        .catch((error) => {
+            console.error("Error getting tasks: ", error);
+        });
 }
 
-// Check reminders every minute
-setInterval(checkReminders, 60000);
+// Call function to retrieve tasks from Firestore when the page loads
+window.addEventListener('load', getTasksFromFirestore);
