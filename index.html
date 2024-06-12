@@ -22,6 +22,40 @@
     <script src="https://www.gstatic.com/firebasejs/9.0.2/firebase-app.js"></script>
     <!-- Firebase Firestore (the Firestore SDK) -->
     <script src="https://www.gstatic.com/firebasejs/9.0.2/firebase-firestore.js"></script>
+    <script>
+        const firebaseConfig = {
+         
+    apiKey: "AIzaSyA4bP5LKBl6AI4tTRBXaEHZ84uPk_xbX7Y",
+    authDomain: "my-to-do-list-f5bdb.firebaseapp.com",
+    projectId: "my-to-do-list-f5bdb",
+    storageBucket: "my-to-do-list-f5bdb.appspot.com",
+    messagingSenderId: "299508950200",
+    appId: "1:299508950200:web:c8f9ae086350d84f54804d",
+    measurementId: "G-J3GE039YBG"
+
+};
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+
+        // Initialize Firestore
+        const db = firebase.firestore();
+
+        // Function to check if the user is authenticated
+        firebase.auth().onAuthStateChanged(function(user) {
+            if (user) {
+                // User is signed in and registered.
+                // Load the page content
+                document.getElementById("list-container").style.display = "block";
+                document.getElementById("input-box").style.display = "block";
+                document.getElementById("reminder-time").style.display = "block";
+                document.getElementsByTagName("button")[0].style.display = "block";
+            } else {
+                // No user is signed in or not registered.
+                // Redirect to the login page or any other page
+                window.location.href = "login.html"; // Assuming login.html is your login page
+            }
+        });
+    </script>
     <script src="script.js"></script>
 </body>
 </html>
